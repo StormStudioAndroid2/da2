@@ -1,6 +1,5 @@
 #include "AvlTree.hpp"
-#include <iostream>
-#include <string.h>
+
 int GetBalance(node* n) {
     return GetHeight(n->right)-GetHeight(n->left);
 }
@@ -55,7 +54,7 @@ node* BalanceTree(node* p) {
     }
     return p;
 }
-node* insert(node* p, char k[KEY_SIZE],unsigned long long value ) {
+node* AddElement(node* p, char k[KEY_SIZE],unsigned long long value ) {
 	if( !p ) {
         node q;
         q.value = value;
@@ -68,8 +67,57 @@ node* insert(node* p, char k[KEY_SIZE],unsigned long long value ) {
         return &q;
     }
 	if( strcmp(k,p->key)<0 )
-		p->left = insert(p->left,k,value);
-	else
-		p->right = insert(p->right,k,value);
+		p->left = AddElement(p->left,k,value);
+	else if ( strcmp(k,p->key)>0 ) {
+		p->right = AddElement(p->right,k,value);
+    }
 	return BalanceTree(p);
+}
+node* FindMinimum(node* p)  {
+    if (p->left==0) {
+        return p;
+    }
+    return FindMinimum(p->left);
+}
+node* RemoveMinimum(node* p) 
+{
+	if( p->left==0 )
+		return p->right;
+	p->left = RemoveMinimum(p->left);
+	return BalanceTree(p);
+}
+node* RemoveElement(node* p, char k[256]) {
+    if (!p) {
+        return 0;
+    }
+	if( strcmp(k,p->key)<0) {
+		p->left = RemoveElement(p->left,k);
+    }
+	else if( strcmp(k,p->key)>0 ) {
+		p->right = RemoveElement(p->right,k);
+    }
+    else {
+		node* q = p->left;
+		node* r = p->right;
+		free(p);
+        if (r==0) {
+            return q;
+        }
+		node* min = FindMinimum(r);
+		min->right = RemoveMinimum(r);
+		min->left = q;
+		return BalanceTree(min);
+	}
+}
+node* FindByKey(node* p, char key[KEY_SIZE]) {
+    if (p==0) {
+        return 0;
+    }
+    if (strcmp(key,p->key)<0) {
+        return FindByKey(p->left,key);
+    }
+    if (strcmp(key,p->key)>0) {
+        return FindByKey(p->right,key);
+    }
+    return p;
 }
